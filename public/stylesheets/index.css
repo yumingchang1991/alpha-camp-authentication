@@ -1,0 +1,12 @@
+#login-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+#login-form input {
+  padding-block: 0.5rem;
+  padding-inline: 6px;
+}

@@ -1,0 +1,17 @@
+{
+  "name": "alpha-camp-authentication",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "start http://localhost:3000/ && nodemon app.js"
+  },
+  "keywords": [],
+  "author": "Yu-Ming Chang",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.1",
+    "express-handlebars": "^6.0.6"
+  }
+}
