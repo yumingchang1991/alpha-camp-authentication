@@ -1,4 +1,7 @@
+require('dotenv').config()
 const express = require('express')
+const session = require('express-session')
+const MongoStore = require('connect-mongo')
 const { engine } = require('express-handlebars')
 
 const app = express()
@@ -44,6 +47,19 @@ app.set('view engine', 'handlebars')
 
 app.use(express.static('public'))
 app.use(express.urlencoded({ extended: false }))
+app.use(session({
+  secret: process.env.SECRET,
+  cookie: {
+    maxAge: 600000,
+    secure: true,
+    httpOnly: true
+  },
+  store: MongoStore.create({ 
+    mongoUrl: process.env.MONGODB_URI
+   }),
+  resave: false,
+  saveUninitialized: false
+}))
 
 app.route('/').get((req, res) => {
   res.render('index')
