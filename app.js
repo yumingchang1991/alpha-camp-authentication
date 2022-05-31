@@ -35,10 +35,17 @@ const users = [
   }
 ]
 
-const utility = {
+const middleware = {
   isUserValid(username, password) {
     const user = users.find( user => user.email === username && user.password === password )
     return user
+  },
+
+  isAuthenticated(req, res, next) {
+    if (req.session.username) return next() 
+    else {
+      res.redirect('/login')
+    }
   }
 }
 
@@ -50,8 +57,8 @@ app.use(express.urlencoded({ extended: false }))
 app.use(session({
   secret: process.env.SECRET,
   cookie: {
-    maxAge: 600000,
-    secure: true,
+    maxAge: 6000000,
+    secure: false,
     httpOnly: true
   },
   store: MongoStore.create({ 
@@ -61,19 +68,50 @@ app.use(session({
   saveUninitialized: false
 }))
 
-app.route('/').get((req, res) => {
-  res.render('index')
-})
+app.route('/').get(
+  middleware.isAuthenticated,
+  (req, res) => res.render('index', { name: req.session.username })
+  )
+
+app.route('/login').get(
+  (req, res) => {
+    res.render('login')
+  }
+)
 
 app.route('/login').post((req, res) => {
   const { email, password } = req.body
-  const user = utility.isUserValid(email, password)
+  const user = middleware.isUserValid(email, password)
   if (user) {
-    res.send(`<h1>Welcome back, ${user.firstName}`)
-    return
+    req.session.regenerate(err => {
+      if (err) next(err)
+    })
+
+    req.session.username = user.firstName
+
+    req.session.save(err => {
+      if(err) next(err)
+      res.render('index', { name: req.session.username })
+    })
   }
-  console.log('authentication failed')
-  res.redirect('/')
 })
+
+app.route('/logout').get(
+  (req, res) => {
+    req.session.username = null
+    req.session.save(err => {
+      if (err) {
+        return next(err)
+      }
+
+      req.session.regenerate((err) => {
+        if (err) {
+          return next(err)
+        }
+        res.redirect('/')
+      })
+    })
+  }
+)
 
 app.listen(PORT, () => console.log(`Express is listening on localhost:${PORT}`))
